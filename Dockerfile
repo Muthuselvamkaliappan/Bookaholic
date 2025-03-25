@@ -1,14 +1,11 @@
-# Use an official Java runtime as a parent image
-FROM openjdk:17-jdk-slim
-
-# Set the working directory inside the container
+# Use an official Maven image to build the project
+FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copy the built JAR file into the container
-COPY target/*.jar app.jar
-
-# Expose the port your app runs on
+# Use Tomcat to run the application
+FROM tomcat:9-jdk17
+COPY --from=build /app/target/Ebook.war /usr/local/tomcat/webapps/Ebook.war
 EXPOSE 8080
-
-# Run the application
-CMD ["java", "-jar", "app.jar"]
+CMD ["catalina.sh", "run"]
